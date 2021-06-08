@@ -38,6 +38,12 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  cloudbase_core: ^0.0.9
+  cloudbase_auth: ^0.0.11
+  cloudbase_function: ^0.0.2
+  cloudbase_storage: ^0.0.3
+  cloudbase_database: ^0.0.10
+  path_provider: ^1.6.5
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
