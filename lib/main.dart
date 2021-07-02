@@ -1,79 +1,109 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'package:cloudbase_core/cloudbase_core.dart';
-import 'package:cloudbase_auth/cloudbase_auth.dart';
-import 'package:cloudbase_function/cloudbase_function.dart';
-import 'package:cloudbase_storage/cloudbase_storage.dart';
-import 'package:cloudbase_database/cloudbase_database.dart';
-import 'package:path_provider/path_provider.dart';
+import 'upload.dart';
+import 'movie.dart';
+import 'book.dart';
 
-void main() {
-  runApp(MyApp());
+Future<void> main() async {
+  runApp((MaterialApp(
+    title: "Navigation basics",
+    home: MyApp(),
+  )));
 }
 
 class MyApp extends StatefulWidget {
+
   @override
   State createState() {
-    return new MyAppState();
+    return MyAppState();
+  }
+}
+
+class CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
+  FloatingActionButtonLocation location;
+  double offsetX; // X方向的偏移量
+  double offsetY; // Y方向的偏移量
+  CustomFloatingActionButtonLocation(this.location, this.offsetX, this.offsetY);
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    Offset offset = location.getOffset(scaffoldGeometry);
+    return Offset(offset.dx + offsetX, offset.dy + offsetY);
   }
 }
 
 class MyAppState extends State<MyApp> {
-  GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-  String? _code = '';
-  String? _stdin = '';
-  String _output = '运行结果';
+  TextEditingController nameController = TextEditingController();
+  int currentIndex = 0;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  var pages = [Book(), Movie()];
 
-  _formSubmitted() async {
-    var _form = _formKey.currentState;
-    if (_form!.validate()) {
-      _form.save();
-      //云函数
-      //云数据库
+  void _changePage(int index) {
+    /*如果点击的导航项不是当前项  切换 */
+    if (index != currentIndex) {
+      setState(() {
+        currentIndex = index;
+      });
     }
   }
 
   @override
+  void initState() {
+    setState(() {
+      currentIndex = 0;
+      pages = [Book(), Movie()];
+    });
+    super.initState();
+  }
+
+  final List<BottomNavigationBarItem> bottomNavItems = [
+    const BottomNavigationBarItem(
+      backgroundColor: Colors.white,
+      icon: Icon(
+        Icons.book_outlined,
+        //color: Color.fromARGB(255, 153, 204, 102),
+      ),
+      label: "书籍",
+    ),
+    const BottomNavigationBarItem(
+      backgroundColor: Colors.white,
+      icon: Icon(
+        Icons.movie_creation_outlined,
+        //color: Color.fromARGB(255, 153, 204, 102),
+      ),
+      label: "影视",
+    ),
+  ];
+
+  @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: new Text("云开发flutter"),
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text("DailyShare"),
+          backgroundColor: const Color.fromARGB(255, 153, 204, 102),
+          centerTitle: true,
         ),
-        floatingActionButton: new FloatingActionButton(
-          onPressed: null,
-          child: new Text("提交"),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Load()));
+          },
+          child: const Icon(Icons.add),
+          backgroundColor: const Color.fromARGB(255, 153, 204, 102),
         ),
-        body: new SingleChildScrollView(
-          padding: EdgeInsets.all(20.0),
-          child: new Form(
-            child: new Column(
-              children: <Widget>[
-                new TextFormField(
-                  maxLines: null,
-                  decoration: new InputDecoration(labelText: '代码'),
-                  onSaved: (val) {
-                    _code = val;
-                  },
-                ),
-                new TextFormField(
-                  maxLines: null,
-                  decoration: new InputDecoration(labelText: '标准输入'),
-                  onSaved: (val) {
-                    _stdin = val;
-                  },
-                ),
-                new Text(_output),
-                new MaterialButton(
-                  onPressed: null,
-                  color: Colors.blue,
-                  child: new Text('下载代码'),
-                )
-              ],
-            ),
-            key: _formKey,
-          ),
+        floatingActionButtonLocation: CustomFloatingActionButtonLocation(
+            FloatingActionButtonLocation.endDocked, -5, -45),
+        bottomNavigationBar: BottomNavigationBar(
+          elevation: 8.0,
+          fixedColor: const Color.fromARGB(255, 153, 204, 102),
+          items: bottomNavItems,
+          currentIndex: currentIndex,
+          type: BottomNavigationBarType.fixed,
+          onTap: (index) {
+            _changePage(index);
+          },
         ),
+        body: pages[currentIndex],
       ),
     );
   }
